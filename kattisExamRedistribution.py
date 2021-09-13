@@ -8,9 +8,16 @@ try:
             raise Exception("Det får inte finnas mer än 30 rum!")
       print(rumLen)
       rum = [int(rum) for rum in input("Ange antal elever i vardera rum, t.ex (3 4 5 ger 3 elever i första rummet och 4 elever i andra rummet etc. )").split()]
-      print(rum)
       if(len(rum) != rumLen):
             raise Exception("Du måste ange antal elever för alla rum.")
 except:
       print("Något gick fel")
-      
+
+while rum:
+      print(rum)
+      papers = max(rum)
+      print(rum.index(max(rum)))
+      print(papers)
+      del rum[rum.index(max(rum))]
+      print(rum)
+      p = input("buth")

@@ -15,9 +15,14 @@ except:
 
 while rum:
       print(rum)
-      papers = max(rum)
+      papers = max(rum) #tar det största rummet, 
       print(rum.index(max(rum)))
       print(papers)
       del rum[rum.index(max(rum))]
       print(rum)
       p = input("buth")
+#vi har rummen med 11, 9, 3 och 2 pers
+#11 ger 9 till rummet med 9 och plockar upp 9, vilket ger 2 från rum 1 och 9 från rum 2
+#dumpar 2 från rum 1 och 1 från rum 2 i rum 3, samt plockar upp 3 vilket ger att vi har 8 från rum 2 och 3 från rum 3
+#dumpar 2 från rum 2 till rum 4 så vi har 6 från rum 2, 3 från rum 3 och 2 från rum 4 för totalt 11 papper
+#vi dumpar resterande papper i rum 1 vilket fungerar

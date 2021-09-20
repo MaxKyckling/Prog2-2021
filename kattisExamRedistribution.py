@@ -13,14 +13,25 @@ try:
 except:
       print("Något gick fel")
 
+bigRoom = max(rum)
+papers = 0
+
 while rum:
       print(rum)
-      papers = max(rum) #tar det största rummet, 
-      print(rum.index(max(rum)))
       print(papers)
-      del rum[rum.index(max(rum))]
-      print(rum)
-      p = input("buth")
+      papers += max(rum) #antal papper är samma som antal elever i största rummet
+      print(papers)
+      del rum[rum.index(max(rum))] #bort med stora rummet
+      if(len(rum) != 0):
+            papers -= max(rum) #delar ut pappren till det nya stora rummet
+            print(papers)
+      else:
+            papers -= bigRoom
+            if papers == 0:
+                  print("det funkar")
+            else:
+                  print(papers)
+                  print("Impossible")
 #vi har rummen med 11, 9, 3 och 2 pers
 #11 ger 9 till rummet med 9 och plockar upp 9, vilket ger 2 från rum 1 och 9 från rum 2
 #dumpar 2 från rum 1 och 1 från rum 2 i rum 3, samt plockar upp 3 vilket ger att vi har 8 från rum 2 och 3 från rum 3

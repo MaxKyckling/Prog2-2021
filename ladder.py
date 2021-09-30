@@ -26,9 +26,13 @@ def drawLeft(loops, iSpace):
         time.sleep(0.05)
     return iSpace
 
-for i in(1, switches):
-    print(i)
-    #iSpace = drawRight(loops, "")
+iSpace = ""
 
-    #iSpace = drawLeft(loops, iSpace)
+for i in range(switches + 1):
+    if(i%2) == 0:
+        iSpace = drawRight(loops, iSpace)
+    else:
+        iSpace = drawLeft(loops, iSpace)
+
+    
 

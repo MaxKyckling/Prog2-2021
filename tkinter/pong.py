@@ -40,25 +40,27 @@ def key_handler(event):
         print("framåt")
         ball1.yVelocity = -1
         ball1.xVelocity = 0.000000001 #får inte vara 0
-    elif(event.keycode == 65): #a
-        print("vänster")
-        ball1.xVelocity = -1
-        ball1.yVelocity = 0.000000001
     elif(event.keycode == 83): #s
         print("bakåt")
         ball1.yVelocity = 1
         ball1.xVelocity = 0.000000001
-    elif(event.keycode == 68): #d
-        print("höger")
-        ball1.xVelocity = 1
-        ball1.yVelocity = 0.000000001
+    elif(event.keycode == 40): #ner
+        ball2.yVelocity = 1
+        ball2.xVelocity = 0.000000001
+    elif(event.keycode == 38): #upp
+        ball2.yVelocity = -1
+        
+
+ 
 
 root.bind("<Key>", key_handler)   
 
 ball1 = Ball(canvas, 10, 10, 50, "red",1,1)
+ball2 = Ball(canvas, 1000, 10, 50, "blue",1,1)
 
 while True:
     ball1.move()
+    ball2.move()
     root.after(10)
     root.update()
 

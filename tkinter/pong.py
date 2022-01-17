@@ -1,8 +1,5 @@
-from re import L
 from tkinter import *
 from time import *
-import random
-import math
 
 root = Tk()
 root.title("0 | 0")
@@ -87,8 +84,6 @@ class Ball:
     def moveToCenter(self, coordinates):
         deltaX = canvasWidth/2 - coordinates[0]
         deltaY = canvasHeight/2 - coordinates[1]
-        print(self.x, deltaX)
-        print(self.y, deltaY)
         self.canvas.move(self.image,deltaX,deltaY)
         root.update()
 
@@ -110,7 +105,10 @@ class Rectangle:
         self.coordinates = self.canvas.coords(self.image)
         if(self.coordinates[2]>=(self.canvas.winfo_width()) or self.coordinates[0]<0):
             self.xVelocity = -self.xVelocity
-        if(self.coordinates[3]>=(self.canvas.winfo_height()) or self.coordinates[1]<0):
+        if(self.coordinates[3]>=(self.canvas.winfo_height())):
+            self.yVelocity = -abs(self.yVelocity)
+        if(self.coordinates[1]<0):
+            self.yVelocity = -abs(self.yVelocity)
             self.yVelocity = -self.yVelocity
         self.canvas.move(self.image,self.xVelocity,self.yVelocity)
 

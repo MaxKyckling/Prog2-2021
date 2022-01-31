@@ -2,6 +2,8 @@ from socket import *
 
 def start_server():
     s = socket()
+    test = s.gethostname()
+    print(test)
     host = "localhost"
     port = 12345
     s.bind((host, port))

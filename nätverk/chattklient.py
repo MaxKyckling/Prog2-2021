@@ -3,76 +3,96 @@ from socket import *
 from _thread import *
 from tkinter import messagebox
 
-def getStringFromEntry(entryName):
-    string = entryName.get()
-    return string
+class Client:
+    def __init__(self):
+        pass
 
-def waitForMessage(conn):
-    while True:
-        b = conn.recv(1024)
-        msg = b.decode("utf-16")
-        print(msg)
+    def getStringFromEntry(self, entryName):
+        string = entryName.get()
+        return string
 
-def sendMessage(s):
-    while True:
-        msg = getStringFromEntry(chattEntry)
+    def waitForMessage(self, conn):
+        while True:
+            b = conn.recv(1024)
+            msg = b.decode("utf-16")
+            self.chattHistory.insert(END, msg)
+
+    def sendWrittenMessage(self, s):
+        msg = self.getStringFromEntry(self.chattEntry)
         b = msg.encode("utf-16")
         s.send(b)
 
-def joinServer():
-    s = socket()
-    host = getStringFromEntry(entryIP)
-    port = int(getStringFromEntry(entryPort))
-    name = getStringFromEntry(entryName)
-    s.connect((host, port))
-    start_new_thread(sendMessage, (s,))
-    start_new_thread(waitForMessage, (s,))
-    return s
+    def sendMessage(self, s): #just nu samma funktion som sendWrittenMessage
+        while True:
+            msg = self.getStringFromEntry(self.chattEntry)
+            b = msg.encode("utf-16")
+            s.send(b)
 
+    def joinServer(self):
+        self.s = socket()
+        self.host = self.getStringFromEntry(self.entryIP)
+        self.port = int(self.getStringFromEntry(self.entryPort))    
+        self.s.connect((self.host, self.port))
 
-root = Tk()
-root.title('Chatt')
+        #skicka namn
+        self.name = self.getStringFromEntry(self.entryName)
+        b = self.name.encode("utf-16")
+        self.s.send(b)
+        self.login.withdraw()
+        self.root.deiconify()
+        start_new_thread(self.waitForMessage, (self.s,))
 
-upperFrame = Frame(root)
-upperFrame.grid(row=0, column = 0, sticky = N+S+E+W)
-lowerFrame = Frame(root)
-lowerFrame.grid(row=1, column= 0, sticky = N+S+E+W)
-chattHistory = Listbox(upperFrame,height= 13, width = 60)
-chattHistory.grid(row = 0, column = 0, sticky = N+S+W+E)
-for line in range(100):
-   chattHistory.insert(END, "This is line number " + str(line))
+    def login(self):
+        self.root = Tk()
+        self.root.withdraw()
+        #login
+        self.login = Toplevel(width=150, height =50)
+        self.login.title('Login')
+        #labels
+        self.labelLogin = Label(self.login, text = "Login")
+        self.labelName = Label(self.login, text= "Namn: ")
+        self.labelIP = Label(self.login, text = "IP: ")
+        self.labelPort = Label(self.login, text = "Port: ")
+        #labels.grid
+        self.labelLogin.grid(row=0, column=1)
+        self.labelName.grid(row=1, column = 0)
+        self.labelIP.grid(row=2, column = 0)
+        self.labelPort.grid(row=3, column= 0)
+        #entries
+        self.entryName = Entry(self.login)
+        self.entryIP = Entry(self.login)
+        self.entryPort = Entry(self.login)
+        self.entryName.grid(row=1, column=1, sticky=N+S+W+E)
+        self.entryIP.grid(row=2, column=1, sticky = N+S+W+E)
+        self.entryPort.grid(row=3, column=1, sticky = N+S+W+E)
+        #button
+        self.joinButton = Button(self.login, text="Join", command = self.joinServer)
+        self.joinButton.grid(row=4, column = 1, sticky = N+S+W+E)
 
-chattHistoryScrollbar = Scrollbar(upperFrame)
-chattHistoryScrollbar.grid(row = 0, column = 1, sticky = 'NSE')
-chattHistoryScrollbar.config(command = chattHistory.yview)
+    def chat(self):
+        self.root.title('Chatt')
 
-chattEntry = Entry(lowerFrame, width= 56)
-chattEntry.grid(row=0, column=0, sticky = N+S+W+E)
-chattButton = Button(lowerFrame, text= "Skicka", command=sendMessage)
-chattButton.grid(row=0, column=1, sticky = N+S+W+E)
-root.withdraw()
+        self.upperFrame = Frame(self.root)
+        self.lowerFrame = Frame(self.root)
+        self.chattHistory = Listbox(self.upperFrame,height= 13, width = 60)
 
-#login
-login = Toplevel(width=150, height =50)
-login.title('Login')
-#labels
-labelLogin = Label(login, text = "Login")
-labelName = Label(login, text= "Namn: ")
-labelIP = Label(login, text = "IP: ")
-labelPort = Label(login, text = "Port: ")
-labelLogin.grid(row=0, column=1)
-labelName.grid(row=1, column = 0)
-labelIP.grid(row=2, column = 0)
-labelPort.grid(row=3, column= 0)
-#entries
-entryName = Entry(login)
-entryIP = Entry(login)
-entryPort = Entry(login)
-entryName.grid(row=1, column=1, sticky=N+S+W+E)
-entryIP.grid(row=2, column=1, sticky = N+S+W+E)
-entryPort.grid(row=3, column=1, sticky = N+S+W+E)
-#button
-joinButton = Button(login, text="Join", command = joinServer)
-joinButton.grid(row=4, column = 1, sticky = N+S+W+E)
+        self.upperFrame.grid(row=0, column = 0, sticky = N+S+E+W)
+        self.lowerFrame.grid(row=1, column= 0, sticky = N+S+E+W)
+        self.chattHistory.grid(row = 0, column = 0, sticky = N+S+W+E)
 
-root.mainloop()
+        self.chattHistoryScrollbar = Scrollbar(self.upperFrame)
+        self.chattHistoryScrollbar.grid(row = 0, column = 1, sticky = 'NSE')
+        self.chattHistoryScrollbar.config(command = self.chattHistory.yview)
+
+        self.chattEntry = Entry(self.lowerFrame, width= 56)
+        
+        self.chattButton = Button(self.lowerFrame, text= "Skicka", command=lambda : self.sendWrittenMessage(self.s))
+        self.chattEntry.grid(row=0, column=0, sticky = N+S+W+E)
+        self.chattButton.grid(row=0, column=1, sticky = N+S+W+E)
+
+        self.root.mainloop()
+
+client = Client()
+client.login()
+client.chat()
+client.joinServer()

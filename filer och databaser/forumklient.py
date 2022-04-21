@@ -3,7 +3,7 @@ from socket import *
 from _thread import *
 from tkinter import messagebox
 
-class user:
+class Client:
     def __init__(self):
         pass
 
@@ -21,6 +21,12 @@ class user:
         msg = self.getStringFromEntry(self.chattEntry)
         b = msg.encode("utf-16")
         s.send(b)
+
+    def sendMessage(self, s): #just nu samma funktion som sendWrittenMessage
+        while True:
+            msg = self.getStringFromEntry(self.chattEntry)
+            b = msg.encode("utf-16")
+            s.send(b)
 
     def joinServer(self):
         self.s = socket()
@@ -86,7 +92,7 @@ class user:
 
         self.root.mainloop()
 
-client = user()
+client = Client()
 client.login()
 client.chat()
 client.joinServer()

@@ -1,6 +1,6 @@
 import tkinter as tk
 import socket
-import threading as _thread
+import threading
 
 
 clients, names = [], []
@@ -42,15 +42,17 @@ def waitForClient(s):
         names.append(name)
         clients.append(conn)
         broadcastMessage(name + " anslöt till chatten!")
-        _thread.start_new_thread(waitForMessage, (conn,))
+        waitForMessageThread = threading.Thread(target=waitForMessage,args= (conn,))
+        waitForMessageThread.start()
 
 def hostServer():
     print("starting server...")
-    s = socket()
+    s = socket.socket()
     host = str(getStringFromEntry(entryIP))
     port = int(getStringFromEntry(entryPort))
     s.bind((host,port))
-    _thread.start_new_thread(waitForClient, (s,))
+    waitForClientThread = threading.Thread(target= waitForClient, args=(s,))
+    waitForClientThread.start()
     return s
 
 root = tk.Tk()

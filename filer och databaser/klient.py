@@ -28,15 +28,17 @@ class Client:
             b = msg.encode("utf-16")
             s.send(b)
 
+    #använder inmatat input och kopplar till servern
     def joinServer(self):
         self.s = socket.socket()
         self.host = self.getStringFromEntry(self.entryIP)
         self.port = int(self.getStringFromEntry(self.entryPort))    
         self.s.connect((self.host, self.port))
 
-        self.loginGUI()
+        self.loginBuildGUI()
         self.serverLogin.withdraw()
 
+    #GUI för port och IP
     def joinServerGUI(self):
         self.root = tk.Tk()
         self.root.withdraw()
@@ -60,28 +62,81 @@ class Client:
         self.joinButton = tk.Button(self.serverLogin, text="Join", command = self.joinServer)
         self.joinButton.grid(row=4, column = 1, sticky = tk.N+tk.S+tk.W+tk.E)
 
-    def loginGUI(self):
+    def loginBuildGUI(self):
         self.root.withdraw()
         #login
-        self.login = tk.Toplevel(width=150, height =50)
+        self.login = tk.Toplevel(width=150, height =300)
         self.login.title('Login')
+        #frames
+        self.loginFrameLogin = tk.Frame(self.login)
+        self.loginFrameRegister = tk.Frame(self.login)
+
+        #^^ ingen .grid funktion ännu
+
         #labels
-        self.labelLogin = tk.Label(self.login, text = "Login")
-        self.labelName = tk.Label(self.login, text= "Namn: ")
-        self.labelPassword = tk.Label(self.login, text= "Password: ")
+        self.labelLogin = tk.Label(self.loginFrameLogin, text = "Login")
+        self.labelName = tk.Label(self.loginFrameLogin, text= "Namn: ")
+        self.labelPassword = tk.Label(self.loginFrameLogin, text= "Password: ")
+        self.labelNoUser = tk.Label(self.loginFrameLogin, text= "No User? ")
         #labels grid
         self.labelLogin.grid(row=0, column=1)
         self.labelName.grid(row=1, column = 0)
         self.labelPassword.grid(row=2, column = 0)
+        self.labelNoUser.grid(row=5, column= 0)
         #entries
-        self.entryName = tk.Entry(self.login)
-        self.entryPassword = tk.Entry(self.login)
+        self.entryName = tk.Entry(self.loginFrameLogin)
+        self.entryPassword = tk.Entry(self.loginFrameLogin)
         #entries grid
         self.entryName.grid(row=1, column=1, sticky= tk.N+tk.S+tk.W+tk.E)
         self.entryPassword.grid(row=2, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
         #button
-        self.loginButton = tk.Button(self.login, text="Join", command = self.joinServer)
+        self.loginButton = tk.Button(self.loginFrameLogin, text="Join", command = self.joinServer)
+        self.signInButton = tk.Button(self.loginFrameLogin, text="Sign In", command = self.registerGUI)
         self.loginButton.grid(row=4, column = 1, sticky = tk.N+tk.S+tk.W+tk.E)
+        self.signInButton.grid(row=5, column =1, sticky = tk.N+tk.S+tk.W+tk.E)
+
+        #REGISTER GUI WIDGETS
+        #labels
+        self.labelRegister = tk.Label(self.loginFrameRegister, text = "Register")
+        self.labelRegisterName = tk.Label(self.loginFrameRegister, text= "Namn: ")
+        self.labelRegisterPassword = tk.Label(self.loginFrameRegister, text= "Password: ")
+        #labels grid
+        self.labelRegister.grid(row=0, column=1)
+        self.labelRegisterName.grid(row=1, column = 0)
+        self.labelRegisterPassword.grid(row=2, column = 0)
+        #entries
+        self.entryRegisterName = tk.Entry(self.loginFrameRegister)
+        self.entryRegisterPassword = tk.Entry(self.loginFrameRegister)
+        #entries grid
+        self.entryRegisterName.grid(row=1, column=1, sticky= tk.N+tk.S+tk.W+tk.E)
+        self.entryRegisterPassword.grid(row=2, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
+        #button
+        self.registerButton = tk.Button(self.loginFrameRegister, text="Register", command = self.registerUser)
+        self.goBackButton = tk.Button(self.loginFrameRegister, text="Go Back", command = self.loginGUI)
+        self.registerButton.grid(row=4, column = 1, sticky = tk.N+tk.S+tk.W+tk.E)
+        self.goBackButton.grid(row=5, column = 1, sticky = tk.N+tk.S+tk.W+tk.E)
+
+        self.loginGUI()
+
+    #GUI för själva inmatningen av inloggningsuppgifter
+    def loginGUI(self):
+        try:
+            print("loginGUI")
+            self.loginFrameRegister.grid_forget()
+            self.loginFrameLogin.grid()
+        except:
+            print("något gick fel i loginGUI")
+    
+    def registerGUI(self):
+        try:
+            print("registerGUI")
+            self.loginFrameLogin.grid_forget()
+            self.loginFrameRegister.grid()
+        except:
+            print("fel i registerGUI")
+    
+    def registerUser(self):
+        print("registerUser funktionen har aktiverats")
 
     def chat(self):
         self.root.title('Chatt')
@@ -104,9 +159,6 @@ class Client:
         self.chattEntry.grid(row=0, column=0, sticky = tk.N+tk.S+tk.W+tk.E)
         self.chattButton.grid(row=0, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
 
-        self.root.mainloop()
-
 client = Client()
 client.joinServerGUI()
-client.chat()
-client.joinServer()
+client.root.mainloop()

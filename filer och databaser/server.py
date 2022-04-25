@@ -45,6 +45,9 @@ def waitForClient(s):
         waitForMessageThread = threading.Thread(target=waitForMessage,args= (conn,))
         waitForMessageThread.start()
 
+def registerUser():
+    pass
+
 def hostServer():
     print("starting server...")
     s = socket.socket()

@@ -2,27 +2,23 @@ import tkinter as tk
 import socket
 import threading 
 
-
 class Client:
+    def __init__(self):
+        self.GUIHandler = GUI()
+
+class ServerInteraction:
     def __init__(self):
         pass
 
-    def getStringFromEntry(self, entryName):
-        string = entryName.get()
-        return string
-
+    #loop för att lyssna efter meddelanden från servern
     def waitForMessage(self, conn):
         while True:
             b = conn.recv(1024)
             msg = b.decode("utf-16")
             self.chattHistory.insert(threading.END, msg)
 
-    def sendWrittenMessage(self, s):
-        msg = self.getStringFromEntry(self.chattEntry)
-        b = msg.encode("utf-16")
-        s.send(b)
-
-    def sendMessage(self, s): #just nu samma funktion som sendWrittenMessage
+    #skickar meddelanden från en viss entry när man klickar på en knapp (ej färdig, taget från gammal kod)
+    def sendMessage(self, s):
         while True:
             msg = self.getStringFromEntry(self.chattEntry)
             b = msg.encode("utf-16")
@@ -31,12 +27,30 @@ class Client:
     #använder inmatat input och kopplar till servern
     def joinServer(self):
         self.s = socket.socket()
-        self.host = self.getStringFromEntry(self.entryIP)
-        self.port = int(self.getStringFromEntry(self.entryPort))    
+        self.host = client.GUIHandler.getStringFromEntry(client.GUIHandler.entryIP)
+        self.port = int(client.GUIHandler.getStringFromEntry(client.GUIHandler.entryPort))    
         self.s.connect((self.host, self.port))
 
-        self.loginBuildGUI()
-        self.serverLogin.withdraw()
+        client.GUIHandler.loginBuildGUI()
+        client.GUIHandler.serverLogin.withdraw()
+
+    def sendMsgToServer(self, typeOfMessage):
+        pass # HÄR SKA JAG GÖRA MEDDELANDEN O GREJER!!!!
+    
+    def registerUser(self):
+        print("registerUser funktionen har aktiverats")  
+
+    def loginUser(self):
+        print("din mamma")  
+
+
+class GUI:
+    def __init__(self):
+        pass
+
+    def getStringFromEntry(self, entryName):
+        string = entryName.get()
+        return string
 
     #GUI för port och IP
     def joinServerGUI(self):
@@ -59,7 +73,7 @@ class Client:
         self.entryIP.grid(row=2, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
         self.entryPort.grid(row=3, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
         #button
-        self.joinButton = tk.Button(self.serverLogin, text="Join", command = self.joinServer)
+        self.joinButton = tk.Button(self.serverLogin, text="Join", command = client.serverHandler.joinServer)
         self.joinButton.grid(row=4, column = 1, sticky = tk.N+tk.S+tk.W+tk.E)
 
     def loginBuildGUI(self):
@@ -71,7 +85,7 @@ class Client:
         self.loginFrameLogin = tk.Frame(self.login)
         self.loginFrameRegister = tk.Frame(self.login)
 
-        #^^ ingen .grid funktion ännu
+        #^^ ingen .grid funktion ännu, därför att de "kopplas" på och av (.grid, .grid_forget)
 
         #labels
         self.labelLogin = tk.Label(self.loginFrameLogin, text = "Login")
@@ -90,7 +104,7 @@ class Client:
         self.entryName.grid(row=1, column=1, sticky= tk.N+tk.S+tk.W+tk.E)
         self.entryPassword.grid(row=2, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
         #button
-        self.loginButton = tk.Button(self.loginFrameLogin, text="Join", command = self.joinServer)
+        self.loginButton = tk.Button(self.loginFrameLogin, text="Join", command = client.serverHandler.loginUser)
         self.signInButton = tk.Button(self.loginFrameLogin, text="Sign In", command = self.registerGUI)
         self.loginButton.grid(row=4, column = 1, sticky = tk.N+tk.S+tk.W+tk.E)
         self.signInButton.grid(row=5, column =1, sticky = tk.N+tk.S+tk.W+tk.E)
@@ -111,7 +125,7 @@ class Client:
         self.entryRegisterName.grid(row=1, column=1, sticky= tk.N+tk.S+tk.W+tk.E)
         self.entryRegisterPassword.grid(row=2, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
         #button
-        self.registerButton = tk.Button(self.loginFrameRegister, text="Register", command = self.registerUser)
+        self.registerButton = tk.Button(self.loginFrameRegister, text="Register", command = client.serverHandler.registerUser)
         self.goBackButton = tk.Button(self.loginFrameRegister, text="Go Back", command = self.loginGUI)
         self.registerButton.grid(row=4, column = 1, sticky = tk.N+tk.S+tk.W+tk.E)
         self.goBackButton.grid(row=5, column = 1, sticky = tk.N+tk.S+tk.W+tk.E)
@@ -134,9 +148,6 @@ class Client:
             self.loginFrameRegister.grid()
         except:
             print("fel i registerGUI")
-    
-    def registerUser(self):
-        print("registerUser funktionen har aktiverats")
 
     def chat(self):
         self.root.title('Chatt')
@@ -160,5 +171,7 @@ class Client:
         self.chattButton.grid(row=0, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
 
 client = Client()
-client.joinServerGUI()
-client.root.mainloop()
+client.serverHandler = ServerInteraction()
+client.GUIHandler.joinServerGUI()
+
+client.GUIHandler.root.mainloop()

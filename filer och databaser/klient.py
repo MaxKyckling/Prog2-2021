@@ -1,10 +1,13 @@
 import tkinter as tk
 import socket
 import threading 
+import pickle
+from tkinter import messagebox
 
 class Client:
     def __init__(self):
         self.GUIHandler = GUI()
+        self.serverHandler = ServerInteraction()
 
 class ServerInteraction:
     def __init__(self):
@@ -18,11 +21,8 @@ class ServerInteraction:
             self.chattHistory.insert(threading.END, msg)
 
     #skickar meddelanden från en viss entry när man klickar på en knapp (ej färdig, taget från gammal kod)
-    def sendMessage(self, s):
-        while True:
-            msg = self.getStringFromEntry(self.chattEntry)
-            b = msg.encode("utf-16")
-            s.send(b)
+    def sendMessage(self, msg):
+        self.s.send(msg)
 
     #använder inmatat input och kopplar till servern
     def joinServer(self):
@@ -33,15 +33,23 @@ class ServerInteraction:
 
         client.GUIHandler.loginBuildGUI()
         client.GUIHandler.serverLogin.withdraw()
-
-    def sendMsgToServer(self, typeOfMessage):
-        pass # HÄR SKA JAG GÖRA MEDDELANDEN O GREJER!!!!
     
     def registerUser(self):
-        print("registerUser funktionen har aktiverats")  
+        #skapar en array med index 0 för typen av meddelande, och resterande index för de värden man kommer använda (vilket man vet är användarnamn och lösenord eftersom att man har typen "register", vilket servern hanterar)
+        messageArray = ["register", client.GUIHandler.getStringFromEntry(client.GUIHandler.entryRegisterName), client.GUIHandler.getStringFromEntry(client.GUIHandler.entryRegisterPassword)]
+        if(messageArray[1] == '' or messageArray[2] == ''):
+            messagebox.showerror("Error", "Alla fält måste vara ifyllda!")          #Om en eller flera entries är tomma, error
+        else:
+            data = pickle.dumps(messageArray)
+            self.s.send(data)
 
     def loginUser(self):
-        print("din mamma")  
+        messageArray = ["login", client.GUIHandler.getStringFromEntry(client.GUIHandler.entryName), client.GUIHandler.getStringFromEntry(client.GUIHandler.entryPassword)]
+        if(messageArray[1] = '' or messageArray[2] == ''):
+            messagebox.showerror("Error", "Alla fält måste vara ifyllda!")
+        else:
+            data = pickle.dumps(messageArray)
+            self.s.send(data)
 
 
 class GUI:
@@ -171,7 +179,6 @@ class GUI:
         self.chattButton.grid(row=0, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
 
 client = Client()
-client.serverHandler = ServerInteraction()
 client.GUIHandler.joinServerGUI()
 
 client.GUIHandler.root.mainloop()

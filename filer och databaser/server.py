@@ -1,7 +1,18 @@
 import tkinter as tk
 import socket
 import threading
+import pickle
+import mysql.connector
 
+#koppla till sql-servern
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  password="",
+  database="forum"
+)
+mycursor = mydb.cursor()
+print("Uppkopplad till databasen!")
 
 clients, names = [], []
 
@@ -11,14 +22,10 @@ def getStringFromEntry(entryName):
 
 def waitForMessage(conn):
     while True:
-        index = clients.index(conn)
-        name = names[index]
-        b = conn.recv(1024)
-        msg = b.decode("utf-16")
-        print(msg)
-        message = (name + ": " + msg)
-        broadcastMessage(message)
-        
+        b = conn.recv(4096)
+        messageArray = pickle.loads(b)
+        if(messageArray[0] == "register"):
+            registerUser(messageArray)
 
 def sendMessage(s):
     while True:
@@ -37,16 +44,15 @@ def waitForClient(s):
         s.listen()
         conn, addr = s.accept()
         print("en ny klient anslöt")
-        name = conn.recv(1024)
-        name = name.decode("utf-16")
-        names.append(name)
-        clients.append(conn)
-        broadcastMessage(name + " anslöt till chatten!")
         waitForMessageThread = threading.Thread(target=waitForMessage,args= (conn,))
         waitForMessageThread.start()
 
-def registerUser():
-    pass
+def registerUser(messageArray):
+    #skapar en sql-sträng för att inserta värdena för username och password
+    sql = "INSERT INTO users (username, password) VALUES (%s, %s)"
+    val = (messageArray[1], messageArray[2])
+    mycursor.execute(sql, val)
+    mydb.commit()
 
 def hostServer():
     print("starting server...")

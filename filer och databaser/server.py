@@ -26,6 +26,8 @@ def waitForMessage(conn):
         messageArray = pickle.loads(b)
         if(messageArray[0] == "register"):
             registerUser(messageArray)
+        elif(messageArray[0] == "login"):
+            loginUser(messageArray)
 
 def sendMessage(s):
     while True:
@@ -48,11 +50,27 @@ def waitForClient(s):
         waitForMessageThread.start()
 
 def registerUser(messageArray):
+    print("test")
     #skapar en sql-sträng för att inserta värdena för username och password
-    sql = "INSERT INTO users (username, password) VALUES (%s, %s)"
-    val = (messageArray[1], messageArray[2])
-    mycursor.execute(sql, val)
+    #sql = "INSERT INTO users (username, password) VALUES (%s, %s)"
+    sql = "INSERT INTO users (username, password) VALUES ('Kalle', 'Anka')"
+    #val = (messageArray[1], messageArray[2])
+    #mycursor.execute(sql, val)
+    mycursor.execute(sql)
     mydb.commit()
+    print("Färdig med registreringen")
+
+def loginUser(messageArray): 
+    username = messageArray[1]
+    password = messageArray[2]
+    print(username)
+    print(password)
+    sql = ("SELECT ID FROM users WHERE username = %s and password =%s")
+    mycursor.execute(sql, (username, password,))
+    idresult = mycursor.fetchone()
+    print(idresult)
+
+    
 
 def hostServer():
     print("starting server...")

@@ -35,7 +35,7 @@ class ServerInteraction:
         client.GUIHandler.serverLogin.withdraw()
     
     def registerUser(self):
-        #skapar en array med index 0 för typen av meddelande, och resterande index för de värden man kommer använda (vilket man vet är användarnamn och lösenord eftersom att man har typen "register", vilket servern hanterar)
+        #skapar en array där index 0 ger en string som representerar typen av meddelande, och resterande index för de värden man kommer använda (vilket man vet är användarnamn och lösenord eftersom att man kan bestämma vilken funktion man använder, exempelvis "register")
         messageArray = ["register", client.GUIHandler.getStringFromEntry(client.GUIHandler.entryRegisterName), client.GUIHandler.getStringFromEntry(client.GUIHandler.entryRegisterPassword)]
         if(messageArray[1] == '' or messageArray[2] == ''):
             messagebox.showerror("Error", "Alla fält måste vara ifyllda!")          #Om en eller flera entries är tomma, error
@@ -45,7 +45,7 @@ class ServerInteraction:
 
     def loginUser(self):
         messageArray = ["login", client.GUIHandler.getStringFromEntry(client.GUIHandler.entryName), client.GUIHandler.getStringFromEntry(client.GUIHandler.entryPassword)]
-        if(messageArray[1] = '' or messageArray[2] == ''):
+        if(messageArray[1] == '' or messageArray[2] == ''):
             messagebox.showerror("Error", "Alla fält måste vara ifyllda!")
         else:
             data = pickle.dumps(messageArray)

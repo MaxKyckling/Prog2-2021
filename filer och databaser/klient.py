@@ -18,14 +18,16 @@ class ServerInteraction:
         while True:
             b = conn.recv(1024)
             messageArray = pickle.loads(b)
-            if(messageArray[0] == "Errormessage"): #värdet på arrayns första index bestämmer vad man gör med meddelandet
+            if(messageArray[0] == "Recieved_message"):
+                client.GUIHandler.chattHistory.insert('end', messageArray[1])
+            elif(messageArray[0] == "Errormessage"): #värdet på arrayns första index bestämmer vad man gör med meddelandet
                 messagebox.showerror(messageArray[1],messageArray[2]) #ex. messageArray[0] == "Errormessage" då skapar man ett errormessage med värdena messageArray[1] och messageArray[2] som är förbestämda
-            if(messageArray[0] == "Login"):
+            elif(messageArray[0] == "Login"):
                 client.id = messageArray[1]
                 client.username = messageArray[2]
                 client.password = messageArray[3]
                 client.GUIHandler.chat()
-            if(messageArray[0] == "History"):
+            elif(messageArray[0] == "History"):
                 for i in range(0, len(messageArray[1])): #loopar genom listan med historiken i st gånger
                     print(messageArray[1][i])
                     client.GUIHandler.chattHistory.insert('end', messageArray[1][i])
@@ -61,6 +63,11 @@ class ServerInteraction:
             messagebox.showerror("Error", "Alla fält måste vara ifyllda!")
         else:
             self.sendMessage(messageArray)
+    
+    def sendWrittenMessage(self,s):
+        messageArray = ["WrittenMessage", client.username + ": " + client.GUIHandler.getStringFromEntry(client.GUIHandler.chattEntry)]
+        self.sendMessage(messageArray)
+
 
 class GUI:
     def __init__(self):
@@ -189,7 +196,7 @@ class GUI:
 
         self.chattEntry = tk.Entry(self.lowerFrame, width= 56)
         
-        self.chattButton = tk.Button(self.lowerFrame, text= "Skicka", command=lambda : self.sendWrittenMessage(self.s))
+        self.chattButton = tk.Button(self.lowerFrame, text= "Skicka", command=lambda : client.serverHandler.sendWrittenMessage(client.serverHandler.s))
         self.chattEntry.grid(row=0, column=0, sticky = tk.N+tk.S+tk.W+tk.E)
         self.chattButton.grid(row=0, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
         

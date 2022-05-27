@@ -24,22 +24,31 @@ def waitForMessage(conn):
     while True:
         b = conn.recv(4096)
         messageArray = pickle.loads(b) #tar emot en array och bestämmer vad den ska göra baserat på vad arrayns första index har för värde
-        if(messageArray[0] == "register"): 
+        if(messageArray[0] == "WrittenMessage"):
+            addToChatHistory(messageArray)
+            broadcastMessage(messageArray)
+        elif(messageArray[0] == "register"): 
             registerUser(messageArray)
         elif(messageArray[0] == "login"):
             loginUser(conn,messageArray)
         elif(messageArray[0] == "Get history"):
             getHistory(conn)
+        
+
+def addToChatHistory(messageArray):
+    sql = "INSERT INTO chat (Text) VALUES (%s)"
+    val = (messageArray[1])
+    mycursor.execute(sql, (val,))
+    mydb.commit()
 
 def sendMessage(s, messageArray):
     data = pickle.dumps(messageArray)
     s.send(data)
 
-def broadcastMessage(message):
-    print(message)
-    msg = message.encode("utf-16")
+def broadcastMessage(messageArray):
+    messageArray[0] = "Recieved_message"
     for client in clients:
-        client.send(msg)
+        sendMessage(client, messageArray)
 
 def waitForClient(s):
     while True:
@@ -50,9 +59,7 @@ def waitForClient(s):
         waitForMessageThread = threading.Thread(target=waitForMessage,args= (conn,))
         waitForMessageThread.start()
 
-def registerUser(messageArray):
-    print("test")
-    #skapar en sql-sträng för att inserta värdena för username och password
+def registerUser(messageArray): #skapar en sql-sträng för att inserta värdena för username och password
     sql = "INSERT INTO users (username, password) VALUES (%s, %s)"
     val = (messageArray[1], messageArray[2])
     mycursor.execute(sql, val)

@@ -25,9 +25,12 @@ class ServerInteraction:
                 client.username = messageArray[2]
                 client.password = messageArray[3]
                 client.GUIHandler.chat()
+            if(messageArray[0] == "History"):
+                for i in range(0, len(messageArray[1])): #loopar genom listan med historiken i st gånger
+                    print(messageArray[1][i])
+                    client.GUIHandler.chattHistory.insert('end', messageArray[1][i])
 
-    #skickar meddelanden från en viss entry när man klickar på en knapp (ej färdig, taget från gammal kod)
-    def sendMessage(self, messageArray):
+    def sendMessage(self, messageArray): #skickar iväg en Array som man bestämmer när man kallar på funktioner
         data = pickle.dumps(messageArray)
         self.s.send(data)
 
@@ -38,10 +41,10 @@ class ServerInteraction:
         self.port = int(client.GUIHandler.getStringFromEntry(client.GUIHandler.entryPort))    
         self.s.connect((self.host, self.port))
 
-        waitForMessageThread = threading.Thread(target=self.waitForMessage,args= (self.s,))
+        waitForMessageThread = threading.Thread(target=self.waitForMessage,args= (self.s,)) #lyssna efter meddelanden
         waitForMessageThread.start()
 
-        client.GUIHandler.loginBuildGUI()
+        client.GUIHandler.loginBuildGUI() #funktionen som skapar själva inloggningsUI:n 
         client.GUIHandler.serverLogin.withdraw()
     
     def registerUser(self):
@@ -91,7 +94,7 @@ class GUI:
         self.joinButton = tk.Button(self.serverLogin, text="Join", command = client.serverHandler.joinServer)
         self.joinButton.grid(row=4, column = 1, sticky = tk.N+tk.S+tk.W+tk.E)
 
-    def loginBuildGUI(self):
+    def loginBuildGUI(self): #UI för inloggningen
         self.root.withdraw()
         #login
         self.login = tk.Toplevel(width=150, height =300)
@@ -167,7 +170,9 @@ class GUI:
     def chat(self):
         #ladda ner tidigare historik
         messageArray = ["Get history"]
-        client.serverHandler.sendmessage()
+        client.serverHandler.sendMessage(messageArray)
+
+        #bygg själva chatten med tkinter
         self.root.title('Chatt')
 
         self.upperFrame = tk.Frame(self.root)

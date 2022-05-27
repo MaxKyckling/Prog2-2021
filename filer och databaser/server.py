@@ -28,6 +28,8 @@ def waitForMessage(conn):
             registerUser(messageArray)
         elif(messageArray[0] == "login"):
             loginUser(conn,messageArray)
+        elif(messageArray[0] == "Get history"):
+            getHistory(conn)
 
 def sendMessage(s, messageArray):
     data = pickle.dumps(messageArray)
@@ -72,7 +74,14 @@ def loginUser(conn, messageArray): #andra och trejde indexen i messageArray inne
         messageArray = ["Login", idresult, username, password]
         sendMessage(conn, messageArray)
 
+def getHistory(conn):
+    sql = "SELECT Text FROM chat"
     
+    mycursor.execute(sql)
+    fetched_data = mycursor.fetchall() #hämtar en lista av tuples, men jag vill ha strängar inte tuples så...
+    history = [''.join(i) for i in fetched_data] #För varje tuple i listan konverterar den till en sträng
+    messageArray = ["History", history]
+    sendMessage(conn, messageArray)
 
 def hostServer():
     print("starting server...")

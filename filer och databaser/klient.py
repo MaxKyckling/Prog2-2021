@@ -17,12 +17,19 @@ class ServerInteraction:
     def waitForMessage(self, conn):
         while True:
             b = conn.recv(1024)
-            msg = b.decode("utf-16")
-            self.chattHistory.insert(threading.END, msg)
+            messageArray = pickle.loads(b)
+            if(messageArray[0] == "Errormessage"): #värdet på arrayns första index bestämmer vad man gör med meddelandet
+                messagebox.showerror(messageArray[1],messageArray[2]) #ex. messageArray[0] == "Errormessage" då skapar man ett errormessage med värdena messageArray[1] och messageArray[2] som är förbestämda
+            if(messageArray[0] == "Login"):
+                client.id = messageArray[1]
+                client.username = messageArray[2]
+                client.password = messageArray[3]
+                client.GUIHandler.chat()
 
     #skickar meddelanden från en viss entry när man klickar på en knapp (ej färdig, taget från gammal kod)
-    def sendMessage(self, msg):
-        self.s.send(msg)
+    def sendMessage(self, messageArray):
+        data = pickle.dumps(messageArray)
+        self.s.send(data)
 
     #använder inmatat input och kopplar till servern
     def joinServer(self):
@@ -30,6 +37,9 @@ class ServerInteraction:
         self.host = client.GUIHandler.getStringFromEntry(client.GUIHandler.entryIP)
         self.port = int(client.GUIHandler.getStringFromEntry(client.GUIHandler.entryPort))    
         self.s.connect((self.host, self.port))
+
+        waitForMessageThread = threading.Thread(target=self.waitForMessage,args= (self.s,))
+        waitForMessageThread.start()
 
         client.GUIHandler.loginBuildGUI()
         client.GUIHandler.serverLogin.withdraw()
@@ -40,17 +50,14 @@ class ServerInteraction:
         if(messageArray[1] == '' or messageArray[2] == ''):
             messagebox.showerror("Error", "Alla fält måste vara ifyllda!")          #Om en eller flera entries är tomma, error
         else:
-            data = pickle.dumps(messageArray)
-            self.s.send(data)
+            self.sendMessage(messageArray)
 
     def loginUser(self):
         messageArray = ["login", client.GUIHandler.getStringFromEntry(client.GUIHandler.entryName), client.GUIHandler.getStringFromEntry(client.GUIHandler.entryPassword)]
         if(messageArray[1] == '' or messageArray[2] == ''):
             messagebox.showerror("Error", "Alla fält måste vara ifyllda!")
         else:
-            data = pickle.dumps(messageArray)
-            self.s.send(data)
-
+            self.sendMessage(messageArray)
 
 class GUI:
     def __init__(self):
@@ -112,7 +119,7 @@ class GUI:
         self.entryName.grid(row=1, column=1, sticky= tk.N+tk.S+tk.W+tk.E)
         self.entryPassword.grid(row=2, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
         #button
-        self.loginButton = tk.Button(self.loginFrameLogin, text="Join", command = client.serverHandler.loginUser)
+        self.loginButton = tk.Button(self.loginFrameLogin, text="Login", command = client.serverHandler.loginUser)
         self.signInButton = tk.Button(self.loginFrameLogin, text="Sign In", command = self.registerGUI)
         self.loginButton.grid(row=4, column = 1, sticky = tk.N+tk.S+tk.W+tk.E)
         self.signInButton.grid(row=5, column =1, sticky = tk.N+tk.S+tk.W+tk.E)
@@ -140,7 +147,7 @@ class GUI:
 
         self.loginGUI()
 
-    #GUI för själva inmatningen av inloggningsuppgifter
+    #GUI för själva inmatningen av inloggningsuppgifter där man använder .grid och .grid_forget för att byta
     def loginGUI(self):
         try:
             print("loginGUI")
@@ -149,7 +156,7 @@ class GUI:
         except:
             print("något gick fel i loginGUI")
     
-    def registerGUI(self):
+    def registerGUI(self): #GUI för själva inmatningen av inloggningsuppgifter där man använder .grid och .grid_forget för att byta
         try:
             print("registerGUI")
             self.loginFrameLogin.grid_forget()
@@ -158,6 +165,9 @@ class GUI:
             print("fel i registerGUI")
 
     def chat(self):
+        #ladda ner tidigare historik
+        messageArray = ["Get history"]
+        client.serverHandler.sendmessage()
         self.root.title('Chatt')
 
         self.upperFrame = tk.Frame(self.root)
@@ -177,6 +187,8 @@ class GUI:
         self.chattButton = tk.Button(self.lowerFrame, text= "Skicka", command=lambda : self.sendWrittenMessage(self.s))
         self.chattEntry.grid(row=0, column=0, sticky = tk.N+tk.S+tk.W+tk.E)
         self.chattButton.grid(row=0, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
+        
+        self.root.deiconify()
 
 client = Client()
 client.GUIHandler.joinServerGUI()

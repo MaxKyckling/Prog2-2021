@@ -23,17 +23,15 @@ def getStringFromEntry(entryName):
 def waitForMessage(conn):
     while True:
         b = conn.recv(4096)
-        messageArray = pickle.loads(b)
-        if(messageArray[0] == "register"):
+        messageArray = pickle.loads(b) #tar emot en array och bestämmer vad den ska göra baserat på vad arrayns första index har för värde
+        if(messageArray[0] == "register"): 
             registerUser(messageArray)
         elif(messageArray[0] == "login"):
-            loginUser(messageArray)
+            loginUser(conn,messageArray)
 
-def sendMessage(s):
-    while True:
-        msg = input("skicka ett meddelande: ")
-        b = msg.encode("utf-16")
-        s.send(b)
+def sendMessage(s, messageArray):
+    data = pickle.dumps(messageArray)
+    s.send(data)
 
 def broadcastMessage(message):
     print(message)
@@ -46,29 +44,33 @@ def waitForClient(s):
         s.listen()
         conn, addr = s.accept()
         print("en ny klient anslöt")
+        clients.append(conn) #sparar vilken klient som har vilken connection
         waitForMessageThread = threading.Thread(target=waitForMessage,args= (conn,))
         waitForMessageThread.start()
 
 def registerUser(messageArray):
     print("test")
     #skapar en sql-sträng för att inserta värdena för username och password
-    #sql = "INSERT INTO users (username, password) VALUES (%s, %s)"
-    sql = "INSERT INTO users (username, password) VALUES ('Kalle', 'Anka')"
-    #val = (messageArray[1], messageArray[2])
-    #mycursor.execute(sql, val)
-    mycursor.execute(sql)
+    sql = "INSERT INTO users (username, password) VALUES (%s, %s)"
+    val = (messageArray[1], messageArray[2])
+    mycursor.execute(sql, val)
     mydb.commit()
-    print("Färdig med registreringen")
 
-def loginUser(messageArray): 
+def loginUser(conn, messageArray): #andra och trejde indexen i messageArray innehåller användarnamn och lösen respektivt
     username = messageArray[1]
     password = messageArray[2]
     print(username)
     print(password)
-    sql = ("SELECT ID FROM users WHERE username = %s and password =%s")
+    sql = ("SELECT ID FROM users WHERE username = %s and password =%s") #letar efter det ID med angivna användarnamn och lösen
     mycursor.execute(sql, (username, password,))
     idresult = mycursor.fetchone()
     print(idresult)
+    if(idresult == None): #Om det inte finns ett ID med lösen och användarnamn så har man skrivit in fel, för då finns användaren inte
+        messageArray = ["Errormessage", "Error", "Felaktigt lösenord eller användarnamn!"]
+        sendMessage(conn, messageArray)
+    else:
+        messageArray = ["Login", idresult, username, password]
+        sendMessage(conn, messageArray)
 
     
 

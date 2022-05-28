@@ -16,8 +16,14 @@ class ServerInteraction:
     #loop för att lyssna efter meddelanden från servern
     def waitForMessage(self, conn):
         while True:
-            b = conn.recv(1024)
-            messageArray = pickle.loads(b)
+            try:
+                b = conn.recv(1024)
+                messageArray = pickle.loads(b)
+            except ConnectionError:
+                print("Tappat kontakten med servern")
+                messagebox.showerror("Error", "Tappade kontakt med servern!")
+                client.GUIHandler.chattHistory.insert('end', "Tappade kontakten till servern!")
+                return
             if(messageArray[0] == "Recieved_message"):
                 client.GUIHandler.chattHistory.insert('end', messageArray[1])
             elif(messageArray[0] == "Errormessage"): #värdet på arrayns första index bestämmer vad man gör med meddelandet
@@ -201,6 +207,8 @@ class GUI:
         self.chattButton.grid(row=0, column=1, sticky = tk.N+tk.S+tk.W+tk.E)
         
         self.root.deiconify()
+        self.login.withdraw()
+        client.serverHandler.sendMessage(["WrittenMessage", client.username + " has joined the chat!"]) #skickar samma slags meddelande som sparas och skickas till alla användare att användare N är nu med
 
 client = Client()
 client.GUIHandler.joinServerGUI()

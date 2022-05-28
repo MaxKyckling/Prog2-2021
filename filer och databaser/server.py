@@ -22,18 +22,34 @@ def getStringFromEntry(entryName):
 
 def waitForMessage(conn):
     while True:
-        b = conn.recv(4096)
+        try:
+            b = conn.recv(4096)
+        except ConnectionError:
+            print(f"Connection from {conn} has been lost")
+            try:
+                index = clients.index(conn) #hittar vilket index connectionen hade
+                print(index)
+                print(names[index])
+                messageArray = ['', f"{names[index]} har lämnat forumet!"] 
+                if(conn in clients):
+                    clients.remove(conn)
+                    names.remove(names[index])
+                addToChatHistory(messageArray)
+                broadcastMessage(messageArray)
+            except:
+                clients.remove(conn)
+                 #namnet läggs endast till efter att man loggat in, vilket betyder att om man inte loggar in behöver servern inte berätta för andra att kontakten brutits
+            return
         messageArray = pickle.loads(b) #tar emot en array och bestämmer vad den ska göra baserat på vad arrayns första index har för värde
         if(messageArray[0] == "WrittenMessage"):
             addToChatHistory(messageArray)
             broadcastMessage(messageArray)
         elif(messageArray[0] == "register"): 
-            registerUser(messageArray)
+            registerUser(conn,messageArray)
         elif(messageArray[0] == "login"):
             loginUser(conn,messageArray)
         elif(messageArray[0] == "Get history"):
             getHistory(conn)
-        
 
 def addToChatHistory(messageArray):
     sql = "INSERT INTO chat (Text) VALUES (%s)"
@@ -59,25 +75,32 @@ def waitForClient(s):
         waitForMessageThread = threading.Thread(target=waitForMessage,args= (conn,))
         waitForMessageThread.start()
 
-def registerUser(messageArray): #skapar en sql-sträng för att inserta värdena för username och password
-    sql = "INSERT INTO users (username, password) VALUES (%s, %s)"
-    val = (messageArray[1], messageArray[2])
-    mycursor.execute(sql, val)
-    mydb.commit()
+def registerUser(conn, messageArray): #skapar en sql-sträng för att inserta värdena för username och password
+    username = messageArray[1]
+    password = messageArray[2]
+    sql = ("SELECT ID FROM users WHERE username = %s") #kollar efter ett id med angivna användarnamn 
+    mycursor.execute(sql, (username,))
+    idresult = mycursor.fetchone()
+    if(idresult == None): #Om det inte finns ett ID med användarnamnet så är det tillgängligt!
+        sql = "INSERT INTO users (username, password) VALUES (%s, %s)"
+        val = (username, password)
+        mycursor.execute(sql, val)
+        mydb.commit()
+    else: #Om det finns ett ID med användarnamnet så är det otillgängligt
+        messageArray = ["Errormessage", "Error", "Användarnamnet är upptaget!"]
+        sendMessage(conn, messageArray)
 
 def loginUser(conn, messageArray): #andra och trejde indexen i messageArray innehåller användarnamn och lösen respektivt
     username = messageArray[1]
     password = messageArray[2]
-    print(username)
-    print(password)
     sql = ("SELECT ID FROM users WHERE username = %s and password =%s") #letar efter det ID med angivna användarnamn och lösen
     mycursor.execute(sql, (username, password,))
     idresult = mycursor.fetchone()
-    print(idresult)
     if(idresult == None): #Om det inte finns ett ID med lösen och användarnamn så har man skrivit in fel, för då finns användaren inte
         messageArray = ["Errormessage", "Error", "Felaktigt lösenord eller användarnamn!"]
         sendMessage(conn, messageArray)
     else:
+        names.append(username)
         messageArray = ["Login", idresult, username, password]
         sendMessage(conn, messageArray)
 

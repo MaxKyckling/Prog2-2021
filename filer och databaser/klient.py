@@ -17,7 +17,7 @@ class ServerInteraction:
     def waitForMessage(self, conn):
         while True:
             try:
-                b = conn.recv(1024)
+                b = conn.recv(4096)
                 messageArray = pickle.loads(b)
             except ConnectionError:
                 print("Tappat kontakten med servern")
@@ -25,7 +25,8 @@ class ServerInteraction:
                 client.GUIHandler.chattHistory.insert('end', "Tappade kontakten till servern!")
                 return
             if(messageArray[0] == "Recieved_message"):
-                client.GUIHandler.chattHistory.insert('end', messageArray[1])
+                client.GUIHandler.chattHistory.insert('end', messageArray[1]+"\n")
+                client.GUIHandler.chattHistory.see('end')
             elif(messageArray[0] == "Errormessage"): #värdet på arrayns första index bestämmer vad man gör med meddelandet
                 messagebox.showerror(messageArray[1],messageArray[2]) #ex. messageArray[0] == "Errormessage" då skapar man ett errormessage med värdena messageArray[1] och messageArray[2] som är förbestämda
             elif(messageArray[0] == "Login"):
@@ -33,10 +34,12 @@ class ServerInteraction:
                 client.username = messageArray[2]
                 client.password = messageArray[3]
                 client.GUIHandler.chat()
+            elif(messageArray[0] == "registrerad"):
+                messagebox.showinfo("Grattis!", "Profil skapad!")
             elif(messageArray[0] == "History"):
                 for i in range(0, len(messageArray[1])): #loopar genom listan med historiken i st gånger
-                    print(messageArray[1][i])
-                    client.GUIHandler.chattHistory.insert('end', messageArray[1][i])
+                    client.GUIHandler.chattHistory.insert('end', messageArray[1][i]+"\n")
+                client.GUIHandler.chattHistory.see('end')
 
     def sendMessage(self, messageArray): #skickar iväg en Array som man bestämmer när man kallar på funktioner
         data = pickle.dumps(messageArray)
@@ -70,9 +73,10 @@ class ServerInteraction:
         else:
             self.sendMessage(messageArray)
     
-    def sendWrittenMessage(self,s):
+    def sendWrittenMessage(self,s): #skapar en array med en sträng som används för att bestämma vad man gör med arrayn, och en sträng med själva texten
         messageArray = ["WrittenMessage", client.username + ": " + client.GUIHandler.getStringFromEntry(client.GUIHandler.chattEntry)]
         self.sendMessage(messageArray)
+        client.GUIHandler.chattEntry.delete(0,'end') #tömmer entry-widgeten på text #56
 
 
 class GUI:
@@ -188,15 +192,15 @@ class GUI:
         #bygg själva chatten med tkinter
         self.root.title('Chatt')
 
-        self.upperFrame = tk.Frame(self.root)
+        self.upperFrame = tk.Frame(self.root) #delar upp i två olika frames, en för chatten och scrollen (övre) och en för input och knapp
         self.lowerFrame = tk.Frame(self.root)
-        self.chattHistory = tk.Listbox(self.upperFrame,height= 13, width = 60)
+        self.chattHistory = tk.Text(self.upperFrame,height= 13, width = 60)
 
         self.upperFrame.grid(row=0, column = 0, sticky = tk.N+tk.S+tk.W+tk.E)
         self.lowerFrame.grid(row=1, column= 0, sticky = tk.N+tk.S+tk.W+tk.E)
         self.chattHistory.grid(row = 0, column = 0, sticky = tk.N+tk.S+tk.W+tk.E)
 
-        self.chattHistoryScrollbar = tk.Scrollbar(self.upperFrame)
+        self.chattHistoryScrollbar = tk.Scrollbar(self.upperFrame) #tkinter scrollbar för chatten
         self.chattHistoryScrollbar.grid(row = 0, column = 1, sticky = 'NSE')
         self.chattHistoryScrollbar.config(command = self.chattHistory.yview)
 
@@ -208,7 +212,7 @@ class GUI:
         
         self.root.deiconify()
         self.login.withdraw()
-        client.serverHandler.sendMessage(["WrittenMessage", client.username + " has joined the chat!"]) #skickar samma slags meddelande som sparas och skickas till alla användare att användare N är nu med
+        client.serverHandler.sendMessage(["WrittenMessage", client.username + " har anslutit!"]) #skickar samma slags meddelande som sparas och skickas till alla användare att användare N är nu med
 
 client = Client()
 client.GUIHandler.joinServerGUI()

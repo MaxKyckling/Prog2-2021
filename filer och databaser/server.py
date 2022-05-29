@@ -82,6 +82,8 @@ def registerUser(conn, messageArray): #skapar en sql-sträng för att inserta v�
     mycursor.execute(sql, (username,))
     idresult = mycursor.fetchone()
     if(idresult == None): #Om det inte finns ett ID med användarnamnet så är det tillgängligt!
+        messageArray = ["registrerad"]
+        sendMessage(conn, messageArray)
         sql = "INSERT INTO users (username, password) VALUES (%s, %s)"
         val = (username, password)
         mycursor.execute(sql, val)
